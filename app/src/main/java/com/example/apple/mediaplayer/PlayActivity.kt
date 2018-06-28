@@ -91,16 +91,35 @@ class PlayActivity : AppCompatActivity() {
 
     //改變 SeekBar
     fun modifySeekBar(){
-        MusicBar.max = MusicService.getMusicLength()
+    //    MusicBar.max = MusicService.getMusicLength()
         var mRunnable : Runnable = object :Runnable {
             override fun run(){
-                while(currentMusicPosition<MusicBar.max || !MusicService.isEmpty()){
-                    /*if(currentMusicPosition == MusicBar.max){
+                Thread.sleep(1000)
+                while(!MusicService.isEmpty()){
+                    if(MusicService.isStart()){
+                        if(MusicService.isChangeSong()){
+                            Thread.sleep(1000)
+                            currentMusicPosition=0
+                        }
                         MusicBar.max = MusicService.getMusicLength()
-                        currentMusicPosition = 0
-                    }*/
-                    currentMusicPosition = MusicService.getCurrentMusicPosition()
-                    MusicBar.setProgress(currentMusicPosition)
+                        MusicBar.setProgress(currentMusicPosition)
+                        Log.d("MusicBar.max", MusicBar.max.toString())
+                        currentMusicPosition = MusicService.getCurrentMusicPosition()
+
+                        Log.d("currentMusicPosition 1", currentMusicPosition.toString())
+                    }
+
+                    /*
+                    if(currentMusicPosition != MusicBar.max){
+
+                    }
+                    else{
+                        Thread.sleep(1000)
+                        MusicBar.max = MusicService.getMusicLength()
+                        var test = MusicBar.max
+                        Log.d("currentmusic_max",test.toString())
+                    }
+*/
                 }
 
                 Log.d("currentMusicPosition", currentMusicPosition.toString())
@@ -124,6 +143,7 @@ class PlayActivity : AppCompatActivity() {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if(fromUser){
                     MusicService.seekTo(progress)
+                    //currentMusicPosition=progress
                 }
             }
 
@@ -135,5 +155,14 @@ class PlayActivity : AppCompatActivity() {
                 MusicService.resumeMusic()
             }
         })
+    }
+
+    override fun onDestroy() {
+        //如果不加此行 按返回鍵時會跑錯 leaked service
+        unbindService(sc)
+        Log.d("PlayActivity OnDestroy", "test")
+
+        super.onDestroy()
+
     }
 }

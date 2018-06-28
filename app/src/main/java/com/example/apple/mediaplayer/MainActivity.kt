@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         //Bind Service
         var intent : Intent = Intent(this,MainService::class.java)
-        startService(intent)
+        //startService(intent)
         bindService(intent, MainServiceConnection, Context.BIND_AUTO_CREATE)
 
         //PlayButton
@@ -186,6 +186,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unbindService(MainServiceConnection) //如果不加此行會跑錯 leaked service
 
 /*
         if(MyMediaPlayer != null && MyMediaPlayer!!.isPlaying){
