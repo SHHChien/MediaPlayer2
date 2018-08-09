@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         //初始化
-        init()
+//        init()
 
         //create music list
         getMusicList()
@@ -53,20 +53,12 @@ class MainActivity : AppCompatActivity() {
         var mRecyclerviewAdapter : RecyclerviewAdapter = RecyclerviewAdapter()
         MusicListRecyclerview.layoutManager = LinearLayoutManager(this)
         MusicListRecyclerview.adapter = mRecyclerviewAdapter
+        mRecyclerviewAdapter.setOnItemClickListener { view, i ->  }
         mRecyclerviewAdapter.setOnItemClickListener(object : RecyclerviewAdapter.onItemClickListener {
             override fun onItemClick(view: View, position: Int) {
                 //對MusicService下播放訊息
                 MusicService.playMusic(position)
 
-/*
-
-                MyMediaPlayer = MediaPlayer.create(this@MainActivity, MusicUri)
-                MyMediaPlayer?.setOnCompletionListener(object : MediaPlayer.OnCompletionListener{
-                    override fun onCompletion(mp: MediaPlayer?) {
-                        mp?.release()
-                    }
-                })
-*/
             }
 
             override fun onItemLongClick(view: View, position: Int) {
@@ -79,80 +71,17 @@ class MainActivity : AppCompatActivity() {
         bindService(intent, MainServiceConnection, Context.BIND_AUTO_CREATE)
 
         //PlayButton
-        Player.setOnClickListener(object : View.OnClickListener {
+        floatingActionButton.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 goToPlayActivity()
             }
 
         })
 
-        //PauseButton
-        PauseButton.setOnClickListener(object : View.OnClickListener{
-            override fun onClick(v: View?) {
-//                pause()
-            }
-        })
-
-/*
-
-        PlayerBar = findViewById(R.id.seekBar)
-
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-           }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                var dest : Int = PlayerBar.progress
-                var time : Int = MyMediaPlayer!!.duration
-                var max : Int = PlayerBar.max
-
-                MyMediaPlayer?.seekTo(time*dest/max)
-            }
-
-        })
-*/
-/*
-
-
-        var tryIntent : Intent = Intent(this, MainService::class.java)
-        startService(tryIntent)
-*/
-
     }
 
-    private fun init() {
-/*
-
-        try {
-            MyMediaPlayer?.setDataSource(path)
-            MyMediaPlayer?.setAudioStreamType(AudioManager.STREAM_MUSIC)
-            MyMediaPlayer?.prepareAsync()
-
-            val milliseconds : Int = 100
-
-            val t = Thread()
-            Thread{
-                Runnable{
-                    while(true){
-                        try{
-                            sleep(milliseconds.toLong())
-                        }catch (e : Exception){
-                            e.printStackTrace()
-                        }
-                    }
-                    mHandler.sendEmptyMessage(0)
-                }
-            }.start()
-        }
-        catch (e: Exception){
-            e.printStackTrace()
-        }
-*/
-
-    }
+//    private fun init() {
+//    }
 
     fun getMusicList(){
         var cursor : Cursor = contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -172,29 +101,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun goToPlayActivity(){
-        //MyMediaPlayer?.start()
         var intent : Intent = Intent()
         intent.setClass(this@MainActivity, PlayActivity::class.java)
         startActivity(intent)
     }
-/*
-
-    fun pause(){
-        MyMediaPlayer?.pause()
-    }
-*/
 
     override fun onDestroy() {
         super.onDestroy()
         unbindService(MainServiceConnection) //如果不加此行會跑錯 leaked service
-
-/*
-        if(MyMediaPlayer != null && MyMediaPlayer!!.isPlaying){
-            MyMediaPlayer?.stop()
-            MyMediaPlayer?.release()
-            MyMediaPlayer = null
-        }
-*/
 
     }
 

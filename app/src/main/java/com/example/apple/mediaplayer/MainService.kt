@@ -1,14 +1,18 @@
 package com.example.apple.mediaplayer
 
+import android.app.NotificationManager
 import android.app.Service
 import android.content.ContentUris
+import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
+import android.support.v4.app.NotificationCompat
 import android.util.Log
 import android.widget.Toast
+import java.security.AccessController.getContext
 
 class MainService : Service, MediaPlayer.OnCompletionListener {
 
@@ -25,80 +29,45 @@ class MainService : Service, MediaPlayer.OnCompletionListener {
 
     var ServiceBinder : IBinder = InnerBinder()
 
+    ////////////////////////////////  Override LifeCycle Function  ////////////////////////////
+    ////////////////////////////////  bindService() ///////////////////////////////////////////
+    //當Activity調用bindService()會使用這個class
+
     inner class InnerBinder : Binder() {
         fun getService() : MainService{
             return this@MainService
         }
     }
 
+
+    override fun onBind(intent: Intent): IBinder? {
+        return ServiceBinder
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        return super.onUnbind(intent)
+        Log.d("MainService onUnbind","Unbind")
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    //基本上用不到
     constructor(){
         init()
     }
-/*    constructor(arrayList: ArrayList<DataModel>){
-        init()
 
-    }*/
-/*    var mHandler : Handler = object : Handler(){
-         override fun handleMessage(message: Message){
-             when(message.what){
-                 1 -> if (message.what ==1){
-                     currentPlace = MyMediaPlayer.currentPosition
-                     var intent : Intent = Intent(android.content.)
-                     intent.action()
-                 }
-             }
-            *//*if(message.what == 1){
-                if(MyMediaPlayer !=null){
-                    currentPlace = MyMediaPlayer.currentPosition
-                }
-            }*//*
-         }
-    }*/
-
-/*    override fun onCreate() {
-        super.onCreate()
-        if(MyMediaPlayer != null) {
-            try {
-                MyMediaPlayer?.reset()
-                MyMediaPlayer?.prepare()
-                MyMediaPlayer?.setOnPreparedListener(PreparedListener(currentPlace))
-
-            } catch (e: Exception) {
-                Log.DEBUG
-            }
-        }
-
-        MyMediaPlayer = MediaPlayer()
-        MyMediaPlayer!!.setOnCompletionListener(this)
-
-
-    }*/
-
-/*
+    /////////////////////////////////  startService()  ///////////////////////////////////////////////
+    //當Activity使用startService()會是用這個class
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        var timer : Timer = Timer()
-        var action : TimerTask = object : TimerTask() {
-            override fun run() {
-                if(count<10){
-                    Log.d("MainService", "Running")
-                    count++
-                }
-                else{
-                    Log.d("MainService", "Done")
-                    timer.cancel()
-                    stopSelf()
-                }
-            }
-        }
+        var NotificationBuilder : NotificationCompat.Builder = NotificationCompat.Builder(this.applicationContext,"forMainService")
+        NotificationBuilder.setAutoCancel(true).setContentTitle("MediaPlayer").setContentText("Try It")
+        var ServiceNotificationManager : NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        ServiceNotificationManager.notify(1, NotificationBuilder.build())
 
-
-        timer.schedule(action, 1000, 1000)
-
-        Log.d("MainService", "onStartCommand")
+        startForeground(5,NotificationBuilder.build())
         return super.onStartCommand(intent, flags, startId)
     }
-*/
 
     override fun onDestroy() {
         super.onDestroy()
@@ -111,15 +80,18 @@ class MainService : Service, MediaPlayer.OnCompletionListener {
         Log.d("MainService", "onDestroy")
     }
 
+    ///////////////////////////////////  MediaPlayer  方法建立  ////////////////////////////////////////
     fun updateSeekBar(){
     }
 
     fun isStart() : Boolean{
         return startToPlay
     }
+
     fun isChangeSong() : Boolean{
         return changeSong
     }
+
     fun playMusic(position : Int) {
         currentListPosition = position
         Log.d("beforeplay",startToPlay.toString())
@@ -140,53 +112,9 @@ class MainService : Service, MediaPlayer.OnCompletionListener {
             startToPlay = true
             Log.d("Afterplay",startToPlay.toString())
             MyMediaPlayer!!.start()
-            if (currentMusicPosition > 0) {
-                MyMediaPlayer?.seekTo(currentMusicPosition)
-            }
         }catch(e:IllegalStateException){
             e.printStackTrace()
         }
-        //MyMediaPlayer = MediaPlayer.create(this@MainService, MusicUri)
-
-//        MyMediaPlayer?.setOnPreparedListener(PreparedListener())
-
-        //if(MyMediaPlayer!!.isPlaying()){
-         //   MyMediaPlayer?.pause()
-       // }
-       // else{
-         //   MyMediaPlayer?.start()
-       // }
-
-        /*if (!MyMediaPlayer!!.isPlaying()) {
-            try {
-                MyMediaPlayer!!.stop()
-                MyMediaPlayer!!.release()
-                MyMediaPlayer = MediaPlayer()
-                MyMediaPlayer!!.setDataSource(this@MainService, MusicUri)
-                MyMediaPlayer!!.prepare()
-                MyMediaPlayer!!.start()
-            } catch (e: IllegalStateException) {
-                // TODO Auto-generated catch block
-                e.printStackTrace()
-            }
-
-        } else {
-            try {
-                MyMediaPlayer!!.setDataSource(this@MainService, MusicUri)
-                MyMediaPlayer!!.prepare()
-                MyMediaPlayer!!.start()
-            } catch (e: IllegalArgumentException) {
-                // TODO Auto-generated catch block
-                e.printStackTrace()
-            } catch (e: SecurityException) {
-                // TODO Auto-generated catch block
-                e.printStackTrace()
-            } catch (e: IllegalStateException) {
-                // TODO Auto-generated catch block
-                e.printStackTrace()
-            }
-
-        }*/
 
     }
 
@@ -227,15 +155,6 @@ class MainService : Service, MediaPlayer.OnCompletionListener {
         return currentMusicPosition
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        return ServiceBinder
-    }
-
-    override fun onUnbind(intent: Intent?): Boolean {
-        return super.onUnbind(intent)
-        Log.d("MainService onUnbind","Unbind")
-    }
-
     inner class PreparedListener() : MediaPlayer.OnPreparedListener {
         override fun onPrepared(mp: MediaPlayer?) {
             mp?.start()
@@ -250,12 +169,6 @@ class MainService : Service, MediaPlayer.OnCompletionListener {
         currentListPosition+=1
         startToPlay = false
         Log.d("isStartinonCompletion", startToPlay.toString())
-/*        if(MyMediaPlayer != null){
-            MyMediaPlayer!!.stop()
-            MyMediaPlayer!!.release()
-            MyMediaPlayer = null
-        }*/
-
         Log.d("currentposition",currentListPosition.toString())
         Log.d("MusicList",MusicList.size.toString())
         if(currentListPosition>=MusicList.size){
@@ -267,6 +180,7 @@ class MainService : Service, MediaPlayer.OnCompletionListener {
         Log.d("currentposition_2",currentListPosition.toString())
     }
 
+    //////////////////////////////////////  初始化  //////////////////////////////////////////////////////
     fun init(){
         Log.d("init","test")
         try {

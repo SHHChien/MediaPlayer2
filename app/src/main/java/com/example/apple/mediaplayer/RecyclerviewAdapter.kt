@@ -12,8 +12,15 @@ class RecyclerviewAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var listener : onItemClickListener? = null
 
+
     fun setOnItemClickListener(listener: onItemClickListener){
         this.listener = listener
+    }
+
+    private lateinit var l: (View, Int) -> Unit
+
+    fun setOnItemClickListener(listener: (View, Int) -> Unit){
+        this.l = listener;
     }
 
     public interface onItemClickListener {

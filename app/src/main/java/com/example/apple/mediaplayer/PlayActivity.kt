@@ -18,8 +18,7 @@ class PlayActivity : AppCompatActivity() {
     lateinit var MusicService : MainService
     var currentMusicPosition : Int = 0
 
-
-
+    ///////////////////////////////// 連接Service  /////////////////////////////////////////////////////
     private var sc : ServiceConnection = object :ServiceConnection{
         override fun onServiceDisconnected(name: ComponentName?) {
         }
@@ -31,33 +30,19 @@ class PlayActivity : AppCompatActivity() {
         }
     }
 
+    fun bindServiceAndAcitivity(){
+        var intent : Intent = Intent(this@PlayActivity, MainService ::class.java)
+        bindService(intent, sc, BIND_AUTO_CREATE)
+    }
 
-//    var flag=true
+    ////////////////////////////////  Activity LifeCycle  //////////////////////////////////////////////
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play)
 
         var isPlaying = false
 
-
         bindServiceAndAcitivity()
-
-        /*var barThread=Thread()
-        barThread.run {
-
-            var currentSeekBarPosition : Int = 0
-
-            runOnUiThread {object : Runnable{
-                override fun run() {
-                        currentSeekBarPosition = MusicService.getCurrentSeekBarPosition()
-                        MusicBar.setProgress(currentSeekBarPosition)
-                }
-            }
-
-            }
-            Thread.sleep(1000)
-        }
-        barThread.start()*/
 
         PlayImageButton.setOnClickListener(object : View.OnClickListener{
             override fun onClick(v: View?) {
@@ -84,11 +69,19 @@ class PlayActivity : AppCompatActivity() {
         })
     }
 
-    fun bindServiceAndAcitivity(){
-        var intent : Intent = Intent(this@PlayActivity, MainService ::class.java)
-        bindService(intent, sc, BIND_AUTO_CREATE)
+
+    override fun onDestroy() {
+        //如果不加此行 按返回鍵時會跑錯 leaked service
+        unbindService(sc)
+        Log.d("PlayActivity OnDestroy", "test")
+
+        super.onDestroy()
+
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////  UI上 功能的展示  ///////////////////////////////////////////
     //改變 SeekBar
     fun modifySeekBar(){
     //    MusicBar.max = MusicService.getMusicLength()
@@ -109,32 +102,15 @@ class PlayActivity : AppCompatActivity() {
                         Log.d("currentMusicPosition 1", currentMusicPosition.toString())
                     }
 
-                    /*
-                    if(currentMusicPosition != MusicBar.max){
-
-                    }
-                    else{
-                        Thread.sleep(1000)
-                        MusicBar.max = MusicService.getMusicLength()
-                        var test = MusicBar.max
-                        Log.d("currentmusic_max",test.toString())
-                    }
-*/
                 }
 
                 Log.d("currentMusicPosition", currentMusicPosition.toString())
 
 
-                /*MusicBar.max = MusicService.getMusicLength()
-
-                while(currentMusicPosition<=MusicBar.max){
-                    currentMusicPosition = MusicService.getCurrentMusicPosition()
-                    MusicBar.setProgress(currentMusicPosition)
-                    Log.d("currentMusicPosition", currentMusicPosition.toString())
-                }*/
-
             }
         }
+
+        ///////////////////////  開執行緒 為了讓seekbar 可以即時更新 UI ////////////////////////////////////////
         var skThread : Thread = Thread(mRunnable)
         skThread.start()
 
@@ -157,12 +133,4 @@ class PlayActivity : AppCompatActivity() {
         })
     }
 
-    override fun onDestroy() {
-        //如果不加此行 按返回鍵時會跑錯 leaked service
-        unbindService(sc)
-        Log.d("PlayActivity OnDestroy", "test")
-
-        super.onDestroy()
-
-    }
 }
