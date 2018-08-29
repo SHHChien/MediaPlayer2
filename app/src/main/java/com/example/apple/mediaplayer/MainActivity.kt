@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         //初始化
 //        init()
 
+
         //create music list
         getMusicList()
 
